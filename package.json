@@ -1,0 +1,28 @@
+{
+    "name": "upload-plus",
+    "version": "1.0.2",
+    "description": "Enhance functionality in the node-ssh library by providing common function implementations",
+    "main": "src/index.js",
+    "type": "module",
+    "scripts": {
+        "prepublish": "npm version patch"
+    },
+    "files": [
+        "src/",
+        "README.md"
+    ],
+    "repository": {
+        "type": "github",
+        "url": "https://github.com/Mr-Fubowen/node-ssh-plus"
+    },
+    "keywords": [
+        "upload",
+        "chunk-upload"
+    ],
+    "author": "fubowen",
+    "license": "MIT",
+    "dependencies": {
+        "axios": "^1.8.4",
+        "web-worker-enhance": "^1.1.1"
+    }
+}
