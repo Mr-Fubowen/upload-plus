@@ -12,9 +12,7 @@ export function toChunk(number, size) {
     }
     return sliceList
 }
-
 export function toFileChunk(file, chunkSize) {
-    debugger
     const sliceList = toChunk(file.size, chunkSize)
     const chunkList = []
     for (const slice of sliceList) {

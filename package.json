@@ -1,7 +1,7 @@
 {
     "name": "upload-plus",
-    "version": "1.0.2",
-    "description": "Enhance functionality in the node-ssh library by providing common function implementations",
+    "version": "1.0.4",
+    "description": "分块上传客户端简单封装，适合 Vue 和 非 Vue 使用",
     "main": "src/index.js",
     "type": "module",
     "scripts": {
@@ -13,16 +13,18 @@
     ],
     "repository": {
         "type": "github",
-        "url": "https://github.com/Mr-Fubowen/node-ssh-plus"
+        "url": "https://github.com/Mr-Fubowen/upload-plus.git"
     },
     "keywords": [
         "upload",
-        "chunk-upload"
+        "chunk-upload",
+        "vue",
+        "client"
     ],
     "author": "fubowen",
     "license": "MIT",
     "dependencies": {
         "axios": "^1.8.4",
-        "web-worker-enhance": "^1.1.1"
+        "web-worker-enhance": "^1.2.3"
     }
 }

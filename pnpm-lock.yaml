@@ -12,8 +12,8 @@ importers:
         specifier: ^1.8.4
         version: 1.8.4
       web-worker-enhance:
-        specifier: ^1.1.1
-        version: 1.1.1
+        specifier: ^1.2.3
+        version: 1.2.3
 
 packages:
 
@@ -113,8 +113,8 @@ packages:
   proxy-from-env@1.1.0:
     resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
 
-  web-worker-enhance@1.1.1:
-    resolution: {integrity: sha512-Am8h1iuNYcu0Nro/pO13Myn/5GWnT8uxUJ8q02LR9X8JpVV8My5lL4zdjViT2c3XER/EclthbXA/dyDkGSxKcg==}
+  web-worker-enhance@1.2.3:
+    resolution: {integrity: sha512-Rkx02/lrJGlJbJBSJGk/ueGYEni2oo3aGzvshAnU4ZcWT9o6VKa/UK4qJDQXnKJyZcvNbZP1fOVGXvDHRGC3kg==}
 
 snapshots:
 
@@ -213,6 +213,6 @@ snapshots:
 
   proxy-from-env@1.1.0: {}
 
-  web-worker-enhance@1.1.1:
+  web-worker-enhance@1.2.3:
     dependencies:
       blakejs: 1.2.1

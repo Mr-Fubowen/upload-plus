@@ -1,7 +1,6 @@
 import axios from 'axios'
-import { Thread } from 'web-worker-enhance'
+import { HashCode, Byte } from 'web-worker-enhance'
 import { toFileChunk, toChunk } from './common'
-import { toByteCount } from './byteUtils'
 
 export const UploadStateEnum = Object.freeze({
     WAITING: 0,
@@ -9,7 +8,7 @@ export const UploadStateEnum = Object.freeze({
     SUCCESS: 2,
     ERROR: 3
 })
-export const createProgress = (current, total) => {
+const createProgress = (current, total) => {
     return {
         current: current,
         total: total,
@@ -23,16 +22,16 @@ async function sign() {
     if (this.signValue) {
         return this.signValue
     }
-    this.signValue = await Thread.run('hashCode', 'hashCode', this.file, {
-        on: {
-            progress: progress => this.onSignProgress?.call(this, progress)
-        }
-    })
+    this.signValue = HashCode.hashCode(this.file, progress =>
+        this.onSignProgress?.call(this, progress)
+    )
     return this.signValue
 }
 async function exists() {
+    if (!this.existsUrl) {
+        return false
+    }
     const response = await axios.post(this.existsUrl, {
-        // name: this.uniqueId(),
         sign: await this.sign()
     })
     const { isExist, data } = response.data.data
@@ -40,7 +39,7 @@ async function exists() {
         if (isExist) {
             it.state = UploadStateEnum.SUCCESS
         } else {
-            if (data.some(idx => idx == it.index)) {
+            if (data?.some(idx => idx == it.index)) {
                 it.state = UploadStateEnum.SUCCESS
             }
         }
@@ -51,11 +50,17 @@ async function exists() {
     return isExist
 }
 async function startUpload(batchSize) {
-    // if (await this.exists()) {
-    //     return
-    // }
-    let waitingList = this.chunks.filter(it => it.state == UploadStateEnum.WAITING)
-    let total = this.chunks.length
+    if (!this.uploadUrl) {
+        throw new Error('uploadUrl 参数未提供，上传失败')
+    }
+    if (await this.exists()) {
+        return
+    }
+    const token = this.token?.()
+    const waitingList = this.chunks.filter(
+        it => it.state == UploadStateEnum.ERROR || it.state == UploadStateEnum.WAITING
+    )
+    const total = this.chunks.length
     let completedCount = total - waitingList.length
     this.state = UploadStateEnum.UPLOADING
     this.onProgress?.call(this, createProgress(completedCount, total))
@@ -72,24 +77,30 @@ async function startUpload(batchSize) {
             form.append('sign', this.signValue)
             form.append('name', this.name)
             try {
-                const response = await axios.post(this.uploadUrl, form, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    },
-                    cancelToken: it.tokenSource.token,
-                    onUploadProgress: event => {
-                        it.progress.current = event.loaded
-                        it.progress.total = event.total
-                        it.progress.percentage = Math.round((event.loaded / event.total) * 100)
-                        this.onChunkUploadProgress?.call(this, it, it.progress)
-                    }
-                })
+                let response
+                if (this.upload) {
+                    response = await this.upload?.(it)
+                } else {
+                    response = await axios.post(this.uploadUrl, form, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            Authorization: token
+                        },
+                        cancelToken: it.tokenSource.token,
+                        onUploadProgress: event => {
+                            it.progress.current = event.loaded
+                            it.progress.total = event.total
+                            it.progress.percentage = Math.round((event.loaded / event.total) * 100)
+                            this.onChunkUploadProgress?.call(this, it, it.progress)
+                        }
+                    })
+                }
                 const { data, status, statusText } = response
                 if (status == 200) {
                     it.state = UploadStateEnum.SUCCESS
                     completedCount++
                     if (data.data.state == 'success') {
-                        this.path = data.data.data
+                        this.data = data.data.data
                         this.state = UploadStateEnum.SUCCESS
                     }
                     this.onProgress?.call(this, createProgress(completedCount, total))
@@ -106,7 +117,7 @@ async function startUpload(batchSize) {
         })
         await Promise.all(tasks)
     }
-    return this.path
+    return this.data
 }
 async function cancel() {
     this.chunks.forEach(it => {
@@ -117,7 +128,9 @@ async function cancel() {
 }
 export function upload(options) {
     const {
+        token,
         uploadUrl,
+        upload,
         file,
         name,
         chunkSize = '10M',
@@ -129,13 +142,15 @@ export function upload(options) {
         onChunkUploadProgress
     } = options
     return {
+        token,
         existsUrl,
         uploadUrl,
+        upload,
         file,
         name: name || file.name,
         chunkSize,
         batchSize,
-        chunks: toFileChunk(file, toByteCount(chunkSize)).map(it => ({
+        chunks: toFileChunk(file, Byte.toByteCount(chunkSize)).map(it => ({
             chunk: it.chunk,
             index: it.index,
             total: it.total,
