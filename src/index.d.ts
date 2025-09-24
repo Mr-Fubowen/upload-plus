@@ -42,7 +42,7 @@ export interface UploadOptions {
      * @description 上传数据大小 = chunkSize * batchSize
      * @default 10M
      */
-    chunkSize: string = '10M'
+    chunkSize: string
     existsUrl: string
     signValue: string
     /**
